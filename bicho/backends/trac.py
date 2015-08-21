@@ -252,6 +252,12 @@ class TracRPC(object):
 
     def __init__(self, url):
         self.url = url
+        self.backend_user = None
+        self.backend_password = None
+        
+        if hasattr(Config, 'backend_user') and hasattr(Config, 'backend_password'):
+            self.backend_user = Config.backend_user
+            self.backend_password = Config.backend_password
 
     def tickets(self, since=None):
         """Returns a list of IDs of tickets that have changed since timestamp."""
@@ -288,10 +294,19 @@ class TracRPC(object):
         # POST parameters
         data = {'method': method, 'params': params}
         data = json.dumps(data)
+        auth = None
+        
+        if self.backend_user and self.backend_password:
+            auth = (self.backend_user, self.backend_password)
+            url = '%s/login/jsonrpc' % self.url
+        else:
+            url = '%s/jsonrpc' % self.url
 
-        res = requests.post('%s/jsonrpc' % self.url,
+        res = requests.post(url,
                             headers=self.HEADERS,
-                            data=data)
+                            data=data,
+                            auth=auth)
+        
         printdbg("Trac RPC %s method called: %s" % (method, res.url))
 
         # Raise HTTP errors, if any
