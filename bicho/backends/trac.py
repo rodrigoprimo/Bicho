@@ -254,7 +254,8 @@ class TracRPC(object):
         self.url = url
         self.backend_user = None
         self.backend_password = None
-        
+        self.requests = requests
+
         if hasattr(Config, 'backend_user') and hasattr(Config, 'backend_password'):
             self.backend_user = Config.backend_user
             self.backend_password = Config.backend_password
@@ -302,7 +303,7 @@ class TracRPC(object):
         else:
             url = '%s/jsonrpc' % self.url
 
-        res = requests.post(url,
+        res = self.requests.post(url,
                             headers=self.HEADERS,
                             data=data,
                             auth=auth)
